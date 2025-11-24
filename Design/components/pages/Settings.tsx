@@ -10,11 +10,6 @@ export function Settings() {
     weeklyDigest: false,
   });
 
-  const [preferences, setPreferences] = useState({
-    language: 'English',
-    timezone: 'UTC-5 (EST)',
-    dateFormat: 'DD/MM/YYYY',
-  });
 
   return (
     <div className="p-8 max-w-5xl mx-auto">
@@ -148,76 +143,6 @@ export function Settings() {
                 }`}
               />
             </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Preferences Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-50 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-              <Globe className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            </div>
-            <div>
-              <h2 className="text-gray-900 dark:text-white">
-                Preferences
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400 text-sm">
-                Customize your experience
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 space-y-6">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm">
-              Language
-            </label>
-            <select
-              value={preferences.language}
-              onChange={(e) => setPreferences({ ...preferences, language: e.target.value })}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option>English</option>
-              <option>Spanish</option>
-              <option>French</option>
-              <option>German</option>
-              <option>Chinese</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm">
-              Timezone
-            </label>
-            <select
-              value={preferences.timezone}
-              onChange={(e) => setPreferences({ ...preferences, timezone: e.target.value })}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option>UTC-5 (EST)</option>
-              <option>UTC-8 (PST)</option>
-              <option>UTC+0 (GMT)</option>
-              <option>UTC+1 (CET)</option>
-              <option>UTC+8 (CST)</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm">
-              Date Format
-            </label>
-            <select
-              value={preferences.dateFormat}
-              onChange={(e) => setPreferences({ ...preferences, dateFormat: e.target.value })}
-              className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option>DD/MM/YYYY</option>
-              <option>MM/DD/YYYY</option>
-              <option>YYYY-MM-DD</option>
-            </select>
           </div>
         </div>
       </div>
