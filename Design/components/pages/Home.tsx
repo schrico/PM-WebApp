@@ -13,13 +13,6 @@ export function Home() {
     { title: 'My Profile', icon: User, path: '/profile', color: 'bg-indigo-500', description: 'Update your information' },
   ];
 
-  const stats = [
-    { label: 'Projects Due Tomorrow', value: 2, icon: Clock, color: 'text-gray-700 dark:text-gray-300', bg: 'bg-gray-50 dark:bg-gray-800/50', border: 'border-gray-200 dark:border-gray-700' },
-    { label: 'Projects Due in 3 Days', value: 5, icon: Calendar, color: 'text-gray-700 dark:text-gray-300', bg: 'bg-gray-50 dark:bg-gray-800/50', border: 'border-gray-200 dark:border-gray-700' },
-    { label: 'Words Due Tomorrow', value: 4150, icon: FileText, color: 'text-gray-700 dark:text-gray-300', bg: 'bg-gray-50 dark:bg-gray-800/50', border: 'border-gray-200 dark:border-gray-700' },
-    { label: 'Words Due in 3 Days', value: 12800, icon: Zap, color: 'text-gray-700 dark:text-gray-300', bg: 'bg-gray-50 dark:bg-gray-800/50', border: 'border-gray-200 dark:border-gray-700' },
-  ];
-
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Welcome Section with Wow Factor */}
@@ -41,31 +34,6 @@ export function Home() {
             You're doing great! Keep up the excellent work.
           </p>
         </div>
-      </div>
-
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={stat.label}
-              className={`p-6 rounded-2xl ${stat.bg} border-2 ${stat.border}`}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className={`w-12 h-12 rounded-xl ${stat.bg} flex items-center justify-center border ${stat.border}`}>
-                  <Icon className={`w-6 h-6 ${stat.color}`} />
-                </div>
-              </div>
-              <p className={`text-4xl mb-2 ${stat.color}`}>
-                {formatNumber(stat.value)}
-              </p>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                {stat.label}
-              </p>
-            </div>
-          );
-        })}
       </div>
 
       {/* Section Header */}
