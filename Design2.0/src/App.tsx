@@ -5,8 +5,12 @@ import { Home } from './components/pages/Home';
 import { MyProjects } from './components/pages/MyProjects';
 import { AssignProjects } from './components/pages/AssignProjects';
 import { ManageProjects } from './components/pages/ManageProjects';
+import { Invoicing } from './components/pages/Invoicing';
 import { Profile } from './components/pages/Profile';
 import { Settings } from './components/pages/Settings';
+import { Project } from './components/pages/Project';
+import { EditProject } from './components/pages/EditProject';
+import { NewProject } from './components/pages/NewProject';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -26,10 +30,14 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/my-projects" element={<MyProjects />} />
-              <Route path="/assign-projects" element={<AssignProjects />} />
+              <Route path="/assign-projects" element={<AssignProjects sidebarCollapsed={sidebarCollapsed} />} />
               <Route path="/manage-projects" element={<ManageProjects />} />
+              <Route path="/invoicing" element={<Invoicing sidebarCollapsed={sidebarCollapsed} />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/project/:id" element={<Project />} />
+              <Route path="/project/:id/edit" element={<EditProject />} />
+              <Route path="/project/new" element={<NewProject />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>

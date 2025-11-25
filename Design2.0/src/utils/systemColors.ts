@@ -1,7 +1,9 @@
 export const systemColors: Record<string, string> = {
-  'Phrase': 'bg-blue-500',
-  'Trados': 'bg-purple-500',
-  'MemoQ': 'bg-green-500',
+  'B0X': 'bg-blue-500',
+  'XTM': 'bg-purple-500',
+  'SSE': 'bg-green-500',
+  'STM': 'bg-orange-500',
+  'LAT': 'bg-pink-500',
 };
 
 export function getSystemColor(system: string): string {
