@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderKanban, UserPlus, LayoutGrid, User } from "lucide-react";
+import { FolderKanban, UserPlus, ClipboardList, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { TypewriterText } from "@/components/TypewriterText";
 import { formatNumber } from "@/utils/formatters";
@@ -11,7 +11,7 @@ export default function HomePage() {
   const dashboardCards = [
     {
       title: "My Projects",
-      icon: FolderKanban,
+      icon: ClipboardList,
       path: "/my-projects",
       color: "bg-blue-500",
       description: "View and manage your assignments",
@@ -27,7 +27,7 @@ export default function HomePage() {
     },
     {
       title: "Manage Projects",
-      icon: LayoutGrid,
+      icon: FolderKanban,
       path: "/manage-projects",
       color: "bg-green-500",
       description: "Oversee all active projects",
@@ -85,7 +85,7 @@ export default function HomePage() {
             <button
               key={card.title}
               onClick={() => router.push(card.path)}
-              className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-200 text-left group"
+              className="p-6 cursor-pointer bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all duration-200 text-left group"
               type="button"
             >
               <div className="flex items-start justify-between mb-4">

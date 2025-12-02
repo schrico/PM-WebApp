@@ -135,7 +135,7 @@ export default function Settings() {
             </div>
             <button
               onClick={() => handleNotificationToggle("email")}
-              className={`w-12 h-6 rounded-full transition-colors relative ${
+              className={`w-12 h-6 cursor-pointer rounded-full transition-colors relative ${
                 notifications.email
                   ? "bg-blue-500"
                   : "bg-gray-300 dark:bg-gray-600"
@@ -164,7 +164,7 @@ export default function Settings() {
             </div>
             <button
               onClick={() => handleNotificationToggle("push")}
-              className={`w-12 h-6 rounded-full transition-colors relative ${
+              className={`w-12 h-6 cursor-pointer rounded-full transition-colors relative ${
                 notifications.push
                   ? "bg-blue-500"
                   : "bg-gray-300 dark:bg-gray-600"
@@ -193,7 +193,7 @@ export default function Settings() {
             </div>
             <button
               onClick={() => handleNotificationToggle("projectAssignments")}
-              className={`w-12 h-6 rounded-full transition-colors relative ${
+              className={`w-12 h-6 cursor-pointer rounded-full transition-colors relative ${
                 notifications.projectAssignments
                   ? "bg-blue-500"
                   : "bg-gray-300 dark:bg-gray-600"
@@ -219,7 +219,7 @@ export default function Settings() {
             </div>
             <button
               onClick={() => handleNotificationToggle("deadlineReminders")}
-              className={`w-12 h-6 rounded-full transition-colors relative ${
+              className={`w-12 h-6 cursor-pointer rounded-full transition-colors relative ${
                 notifications.deadlineReminders
                   ? "bg-blue-500"
                   : "bg-gray-300 dark:bg-gray-600"
@@ -243,7 +243,7 @@ export default function Settings() {
             </div>
             <button
               onClick={() => handleNotificationToggle("weeklyDigest")}
-              className={`w-12 h-6 rounded-full transition-colors relative ${
+              className={`w-12 h-6 cursor-pointer rounded-full transition-colors relative ${
                 notifications.weeklyDigest
                   ? "bg-blue-500"
                   : "bg-gray-300 dark:bg-gray-600"
@@ -266,7 +266,7 @@ export default function Settings() {
           onClick={handleSave}
           disabled={!hasChanges || isSaving}
           type="button"
-          className={`px-6 py-3 rounded-lg transition-colors flex items-center gap-2 shadow-sm text-sm font-medium ${
+          className={`px-6 py-3 cursor-pointer rounded-lg transition-colors flex items-center gap-2 shadow-sm text-sm font-medium ${
             !hasChanges || isSaving
               ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed"
               : "bg-blue-500 hover:bg-blue-600 text-white"

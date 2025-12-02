@@ -7,6 +7,10 @@ import { FilterDropdown } from "@/components/FilterDropdown";
 import { ViewToggle } from "@/components/ViewToggle";
 import { formatNumber, formatDate } from "@/utils/formatters";
 import { getSystemColor } from "@/utils/toChange/systemColors";
+import {
+  matchesDueDateFilter,
+  matchesLengthFilter,
+} from "@/utils/filterHelpers";
 
 type Project = {
   id: string;
@@ -15,8 +19,10 @@ type Project = {
   words: number;
   lines: number;
   translators: string[];
-  dueDate: string; // ISO string, e.g. "2025-11-25"
+  dueDate: string; // ISO string, e.g. "2025-11-27"
   instructions: string;
+  sourceLanguage?: string;
+  targetLanguage?: string;
 };
 
 type User = {
@@ -29,53 +35,63 @@ type User = {
 const projects: Project[] = [
   {
     id: "1",
-    system: "Phrase",
+    system: "B0X",
     project: "Marketing Campaign Q4",
     words: 2500,
     lines: 180,
     translators: [],
-    dueDate: "2025-11-25",
+    dueDate: "2025-11-27",
     instructions: "Follow brand guidelines",
+    sourceLanguage: "EN-English",
+    targetLanguage: "ES-Spanish",
   },
   {
     id: "2",
-    system: "Trados",
+    system: "XTM",
     project: "Legal Contract Translation",
     words: 4200,
     lines: 310,
     translators: ["John Smith"],
-    dueDate: "2025-11-22",
+    dueDate: "2025-11-27",
     instructions: "Certified translation required",
+    sourceLanguage: "EN-English",
+    targetLanguage: "DE-German",
   },
   {
     id: "3",
-    system: "MemoQ",
+    system: "SSE",
     project: "Technical Manual v2.3",
     words: 8900,
     lines: 650,
     translators: ["Maria Garcia", "Jean Dupont"],
     dueDate: "2025-11-28",
     instructions: "Use glossary provided",
+    sourceLanguage: "DE-German",
+    targetLanguage: "EN-English",
   },
   {
     id: "4",
-    system: "Phrase",
+    system: "B0X",
     project: "Website Localization",
     words: 1800,
     lines: 125,
     translators: [],
-    dueDate: "2025-11-24",
+    dueDate: "2025-11-28",
     instructions: "SEO keywords must be maintained",
+    sourceLanguage: "EN-English",
+    targetLanguage: "PT-Portuguese",
   },
   {
     id: "5",
-    system: "Trados",
+    system: "XTM",
     project: "User Guide Translation",
     words: 3200,
     lines: 240,
     translators: ["Anna Kowalski"],
-    dueDate: "2025-11-20",
+    dueDate: "2025-11-29",
     instructions: "Maintain formatting",
+    sourceLanguage: "EN-English",
+    targetLanguage: "BR-Brazilian",
   },
 ];
 
@@ -92,15 +108,12 @@ const users: User[] = [
 
 export default function AssignProjectsPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectionMode, setSelectionMode] = useState<"radio" | "checkbox">(
-    "radio",
-  );
   const [selectedProjects, setSelectedProjects] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const [showUserSelection, setShowUserSelection] = useState(false);
   const [selectedTranslators, setSelectedTranslators] = useState<Set<string>>(
-    new Set(),
+    new Set()
   );
   const [translatorMessages, setTranslatorMessages] = useState<
     Record<string, string>
@@ -109,15 +122,43 @@ export default function AssignProjectsPage() {
 
   // Filter states
   const [systemFilter, setSystemFilter] = useState<string | null>(null);
-  const [deadlineFilter, setDeadlineFilter] = useState<string | null>(null);
+  const [dueDateFilter, setDueDateFilter] = useState<string | null>(null);
+  const [customDueDate, setCustomDueDate] = useState<string>("");
   const [sourceLangFilter, setSourceLangFilter] = useState<string | null>(null);
   const [targetLangFilter, setTargetLangFilter] = useState<string | null>(null);
   const [lengthFilter, setLengthFilter] = useState<string | null>(null);
-  const [toolFilter, setToolFilter] = useState<string | null>(null);
-  const [assignmentFilter, setAssignmentFilter] = useState<string | null>(null);
+  // const [toolFilter, setToolFilter] = useState<string | null>(null); // commented out
+  const [assignmentFilter, setAssignmentFilter] = useState<string | null>(
+    "Unassigned"
+  );
 
-  // Basic filtering: search + assignment status for now
-  const filteredProjects = projects.filter((p) => {
+  const clearAllFilters = () => {
+    setSystemFilter(null);
+    setDueDateFilter(null);
+    setCustomDueDate("");
+    setAssignmentFilter(null); // Keep the default
+    setSourceLangFilter(null);
+    setTargetLangFilter(null);
+    setLengthFilter(null);
+    // setToolFilter(null); // commented out
+  };
+
+  const hasActiveFilters =
+    systemFilter ||
+    dueDateFilter ||
+    assignmentFilter ||
+    sourceLangFilter ||
+    targetLangFilter ||
+    lengthFilter; // toolFilter commented out
+
+  // Sort projects by due date (earliest to latest)
+  const sortedProjects = [...projects].sort(
+    (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+  );
+
+  // Filtering logic
+  const filteredProjects = sortedProjects.filter((p) => {
+    // Search filter
     if (
       searchTerm &&
       !p.project.toLowerCase().includes(searchTerm.toLowerCase())
@@ -125,6 +166,7 @@ export default function AssignProjectsPage() {
       return false;
     }
 
+    // Assignment status filter
     if (assignmentFilter === "Unassigned" && p.translators.length > 0) {
       return false;
     }
@@ -133,24 +175,70 @@ export default function AssignProjectsPage() {
       return false;
     }
 
-    // Other filters (systemFilter, deadlineFilter, etc.) can be wired later
-    // when you have real data semantics coming from the backend.
+    // System filter
+    if (systemFilter && p.system !== systemFilter) {
+      return false;
+    }
+
+    // Due date filter
+    if (
+      dueDateFilter &&
+      !matchesDueDateFilter(
+        p.dueDate,
+        dueDateFilter,
+        customDueDate || undefined
+      )
+    ) {
+      return false;
+    }
+
+    // Source language filter
+    if (sourceLangFilter && p.sourceLanguage !== sourceLangFilter) {
+      return false;
+    }
+
+    // Target language filter
+    if (targetLangFilter && p.targetLanguage !== targetLangFilter) {
+      return false;
+    }
+
+    // Length filter
+    if (lengthFilter && !matchesLengthFilter(p.words, lengthFilter)) {
+      return false;
+    }
+
+    // Tool filter - commented out as requested
+    // if (toolFilter && p.tool !== toolFilter) {
+    //   return false;
+    // }
 
     return true;
   });
 
-  const handleSelection = (projectId: string) => {
-    if (selectionMode === "radio") {
-      setSelectedProjects(new Set([projectId]));
-    } else {
-      const newSelection = new Set(selectedProjects);
-      if (newSelection.has(projectId)) {
-        newSelection.delete(projectId);
-      } else {
-        newSelection.add(projectId);
-      }
-      setSelectedProjects(newSelection);
+  const handleRowClick = (id: string, e: React.MouseEvent) => {
+    // Don't handle clicks on buttons (but allow clicks on checkboxes to be handled by the row)
+    if ((e.target as HTMLElement).closest("button")) {
+      return;
     }
+    // If clicking directly on the checkbox, let the checkbox's onChange handle it
+    const target = e.target as HTMLElement;
+    if (
+      target.tagName === "INPUT" &&
+      target.getAttribute("type") === "checkbox"
+    ) {
+      return;
+    }
+    handleSelection(id);
+  };
+
+  const handleSelection = (projectId: string) => {
+    const newSelection = new Set(selectedProjects);
+    if (newSelection.has(projectId)) {
+      newSelection.delete(projectId);
+    } else {
+      newSelection.add(projectId);
+    }
+    setSelectedProjects(newSelection);
   };
 
   const handleConfirmSelection = () => {
@@ -183,7 +271,7 @@ export default function AssignProjectsPage() {
       "to users",
       Array.from(selectedTranslators),
       "with messages",
-      translatorMessages,
+      translatorMessages
     );
     setShowUserSelection(false);
     setSelectedProjects(new Set());
@@ -192,7 +280,7 @@ export default function AssignProjectsPage() {
   };
 
   const selectedProjectsList = projects.filter((p) =>
-    selectedProjects.has(p.id),
+    selectedProjects.has(p.id)
   );
 
   // --- USER SELECTION VIEW ---
@@ -205,8 +293,8 @@ export default function AssignProjectsPage() {
               Assign to Translator
             </h1>
             <p className="text-gray-500 dark:text-gray-400">
-              Select one or more translators for {selectedProjects.size} selected
-              project{selectedProjects.size !== 1 ? "s" : ""}
+              Select one or more translators for {selectedProjects.size}{" "}
+              selected project{selectedProjects.size !== 1 ? "s" : ""}
             </p>
           </div>
           <button
@@ -215,7 +303,7 @@ export default function AssignProjectsPage() {
               setSelectedTranslators(new Set());
               setTranslatorMessages({});
             }}
-            className="px-5 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors flex items-center gap-2 border border-gray-200 dark:border-gray-700"
+            className="px-5 py-2.5 cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors flex items-center gap-2 border border-gray-200 dark:border-gray-700"
             type="button"
           >
             <X className="w-5 h-5" />
@@ -253,18 +341,37 @@ export default function AssignProjectsPage() {
             return (
               <div
                 key={user.id}
-                className={`p-6 bg-white dark:bg-gray-800 rounded-2xl border transition-all duration-200 ${
+                className={`p-6 bg-white dark:bg-gray-800 rounded-2xl border transition-all duration-200 cursor-pointer ${
                   isSelected
                     ? "border-blue-500 shadow-lg"
                     : "border-gray-200 dark:border-gray-700 hover:shadow-lg"
                 }`}
+                onClick={(e) => {
+                  // Don't handle clicks on buttons, textarea, or label
+                  if (
+                    (e.target as HTMLElement).closest("button") ||
+                    (e.target as HTMLElement).closest("textarea") ||
+                    (e.target as HTMLElement).closest("label")
+                  ) {
+                    return;
+                  }
+                  // If clicking directly on the checkbox, let the checkbox's onChange handle it
+                  const target = e.target as HTMLElement;
+                  if (
+                    target.tagName === "INPUT" &&
+                    target.getAttribute("type") === "checkbox"
+                  ) {
+                    return;
+                  }
+                  handleTranslatorToggle(user.id);
+                }}
               >
                 <div className="flex items-start gap-3 mb-4">
                   <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => handleTranslatorToggle(user.id)}
-                    className="outline-style w-5 h-5 mt-1 rounded"
+                    className="outline-style w-5 h-5 mt-1 rounded cursor-pointer"
                   />
                   <div className="flex flex-col items-center text-center flex-1">
                     <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white mb-3">
@@ -280,7 +387,10 @@ export default function AssignProjectsPage() {
                 </div>
 
                 {isSelected && (
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div
+                    className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <label className="block text-gray-700 dark:text-gray-300 text-sm mb-2">
                       Instructions (optional)
                     </label>
@@ -292,6 +402,7 @@ export default function AssignProjectsPage() {
                       placeholder="Add special instructions..."
                       className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                       rows={3}
+                      onClick={(e) => e.stopPropagation()}
                     />
                   </div>
                 )}
@@ -305,7 +416,7 @@ export default function AssignProjectsPage() {
           <button
             onClick={handleAssign}
             disabled={selectedTranslators.size === 0}
-            className="px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-lg"
+            className="px-8 py-4 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg text-lg"
             type="button"
           >
             Assign to {selectedTranslators.size} Translator
@@ -347,80 +458,88 @@ export default function AssignProjectsPage() {
             </span>
             <ViewToggle view={viewMode} onViewChange={setViewMode} />
           </div>
-
-          <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-            <span className="text-sm text-gray-700 dark:text-gray-300">
-              Selection:
-            </span>
-            <button
-              onClick={() => setSelectionMode("radio")}
-              className={`px-3 py-1 rounded-md text-sm transition-all ${
-                selectionMode === "radio"
-                  ? "bg-blue-500 text-white shadow-sm"
-                  : "bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-500"
-              }`}
-              type="button"
-            >
-              Single
-            </button>
-            <button
-              onClick={() => setSelectionMode("checkbox")}
-              className={`px-3 py-1 rounded-md text-sm transition-all ${
-                selectionMode === "checkbox"
-                  ? "bg-blue-500 text-white shadow-sm"
-                  : "bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-500"
-              }`}
-              type="button"
-            >
-              Multiple
-            </button>
-          </div>
         </div>
 
-        {/* Filter dropdowns */}
-        <div className="flex flex-wrap gap-3 items-start">
-          <FilterDropdown
-            label="Assignment Status"
-            options={["Unassigned", "Assigned"]}
-            selected={assignmentFilter}
-            onSelect={setAssignmentFilter}
-          />
-          <FilterDropdown
-            label="System"
-            options={["Phrase", "Trados", "MemoQ"]}
-            selected={systemFilter}
-            onSelect={setSystemFilter}
-          />
-          <FilterDropdown
-            label="Deadline"
-            options={["This Week", "Next Week", "This Month", "Overdue"]}
-            selected={deadlineFilter}
-            onSelect={setDeadlineFilter}
-          />
-          <FilterDropdown
-            label="Source Language"
-            options={["English", "Spanish", "French", "German", "Chinese"]}
-            selected={sourceLangFilter}
-            onSelect={setSourceLangFilter}
-          />
-          <FilterDropdown
-            label="Target Language"
-            options={["English", "Spanish", "French", "German", "Chinese"]}
-            selected={targetLangFilter}
-            onSelect={setTargetLangFilter}
-          />
-          <FilterDropdown
-            label="Length"
-            options={["Short (<2000)", "Medium (2000-5000)", "Long (>5000)"]}
-            selected={lengthFilter}
-            onSelect={setLengthFilter}
-          />
-          <FilterDropdown
-            label="Tool"
-            options={["CAT Tool", "Manual", "MT Post-editing"]}
-            selected={toolFilter}
-            onSelect={setToolFilter}
-          />
+        {/* Individual Filter Dropdowns */}
+        <div className="flex justify-between items-start gap-3">
+          <div className="flex flex-wrap gap-3 items-start">
+            <FilterDropdown
+              label="Assignment Status"
+              options={["Unassigned", "Assigned"]}
+              selected={assignmentFilter}
+              onSelect={setAssignmentFilter}
+            />
+            <FilterDropdown
+              label="System"
+              options={["B0X", "XTM", "SSE", "STM", "LAT"]}
+              selected={systemFilter}
+              onSelect={setSystemFilter}
+            />
+            <FilterDropdown
+              label="Due Date"
+              options={[
+                "Today",
+                "In 1 day",
+                "In 3 days",
+                "In a week",
+                "In a month",
+                "Custom date",
+              ]}
+              selected={dueDateFilter}
+              onSelect={setDueDateFilter}
+              customDateValue={customDueDate}
+              onCustomDateChange={setCustomDueDate}
+            />
+            <FilterDropdown
+              label="Source Language"
+              options={[
+                "EN-English",
+                "DE-German",
+                "BR-Brazilian",
+                "PT-Portuguese",
+                "ES-Spanish",
+              ]}
+              selected={sourceLangFilter}
+              onSelect={setSourceLangFilter}
+            />
+            <FilterDropdown
+              label="Target Language"
+              options={[
+                "EN-English",
+                "DE-German",
+                "BR-Brazilian",
+                "PT-Portuguese",
+                "ES-Spanish",
+              ]}
+              selected={targetLangFilter}
+              onSelect={setTargetLangFilter}
+            />
+            <FilterDropdown
+              label="Length"
+              options={["Short", "Long"]}
+              selected={lengthFilter}
+              onSelect={setLengthFilter}
+            />
+            {/* Tool filter - commented out as requested */}
+            {/* <FilterDropdown
+              label="Tool"
+              options={["C-User", "TE-User"]}
+              selected={toolFilter}
+              onSelect={setToolFilter}
+            /> */}
+          </div>
+
+          {/* Clear Filters Button */}
+          {hasActiveFilters && (
+            <button
+              onClick={clearAllFilters}
+              className="px-4 py-2 cursor-pointer rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-200 dark:bg-black text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 hover:text-red-600 dark:hover:text-red-400 transition-all flex items-center gap-2 text-sm shadow-sm shrink-0"
+              type="button"
+            >
+              <X className="w-4 h-4" />
+              Clear Filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -460,28 +579,26 @@ export default function AssignProjectsPage() {
                 {filteredProjects.map((project) => (
                   <tr
                     key={project.id}
-                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors cursor-pointer"
+                    onClick={(e) => handleRowClick(project.id, e)}
                   >
                     <td className="px-6 py-4">
                       <input
-                        type={selectionMode}
-                        name={
-                          selectionMode === "radio"
-                            ? "project-selection"
-                            : undefined
-                        }
+                        type="checkbox"
                         checked={selectedProjects.has(project.id)}
                         onChange={() => handleSelection(project.id)}
-                        className="outline-style w-4 h-4 rounded"
+                        className="outline-style w-4 h-4 rounded cursor-pointer"
                       />
                     </td>
                     <td className="px-6 py-4">
                       <div
-                        className={`w-3 h-3 rounded ${getSystemColor(project.system)}`}
+                        className={`w-3 h-3 rounded ${getSystemColor(
+                          project.system
+                        )}`}
                       />
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-800/30 text-gray-700 dark:text-gray-200 text-xs md:text-sm">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm">
                         {project.system}
                       </span>
                     </td>
@@ -538,26 +655,32 @@ export default function AssignProjectsPage() {
                     ? "border-blue-500 shadow-lg"
                     : "border-gray-200 dark:border-gray-700 hover:shadow-lg"
                 }`}
-                onClick={() => handleSelection(project.id)}
+                onClick={(e) => {
+                  // If clicking directly on the checkbox, let the checkbox's onChange handle it
+                  const target = e.target as HTMLElement;
+                  if (
+                    target.tagName === "INPUT" &&
+                    target.getAttribute("type") === "checkbox"
+                  ) {
+                    return;
+                  }
+                  handleSelection(project.id);
+                }}
               >
                 <div className="flex items-start gap-4 mb-4">
                   <input
-                    type={selectionMode}
-                    name={
-                      selectionMode === "radio"
-                        ? "project-selection"
-                        : undefined
-                    }
+                    type="checkbox"
                     checked={isSelected}
                     onChange={() => handleSelection(project.id)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="outline-style w-4 h-4 mt-1 rounded"
+                    className="outline-style w-4 h-4 mt-1 rounded cursor-pointer"
                   />
                   <div
-                    className={`w-3 h-3 mt-1 rounded shrink-0 ${getSystemColor(project.system)}`}
+                    className={`w-3 h-3 mt-1 rounded shrink-0 ${getSystemColor(
+                      project.system
+                    )}`}
                   />
                   <div className="flex-1 min-w-0">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs md:text-sm mb-2">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-sm mb-2">
                       {project.system}
                     </span>
                   </div>
@@ -628,18 +751,37 @@ export default function AssignProjectsPage() {
         </div>
       )}
 
-      {/* Confirm Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={handleConfirmSelection}
-          disabled={selectedProjects.size === 0}
-          className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-          type="button"
+      {/* Confirm Button Bar */}
+      {selectedProjects.size > 0 && (
+        <div
+          className="fixed bottom-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 transition-all duration-300"
+          style={{ left: "var(--sidebar-width)" }}
         >
-          Continue with {selectedProjects.size} project
-          {selectedProjects.size !== 1 ? "s" : ""}
-        </button>
-      </div>
+          <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="text-gray-900 dark:text-white">
+                <span className="font-semibold">{selectedProjects.size}</span>{" "}
+                project{selectedProjects.size !== 1 ? "s" : ""} selected
+              </div>
+              <button
+                onClick={() => setSelectedProjects(new Set())}
+                className="px-4 py-2 cursor-pointer bg-gray-100 dark:bg-gray-700 hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors border border-gray-200 dark:border-gray-600 hover:border-red-300 dark:hover:border-red-800"
+                type="button"
+              >
+                Clear selection
+              </button>
+            </div>
+            <button
+              onClick={handleConfirmSelection}
+              className="px-6 py-3 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors shadow-sm"
+              type="button"
+            >
+              Continue with {selectedProjects.size} project
+              {selectedProjects.size !== 1 ? "s" : ""}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

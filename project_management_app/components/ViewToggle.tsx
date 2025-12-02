@@ -15,7 +15,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
       <button
         type="button"
         onClick={() => onViewChange("table")}
-        className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs transition-colors ${
+        className={`inline-flex cursor-pointer items-center justify-center w-8 h-8 rounded-full text-xs transition-colors ${
           view === "table"
             ? "bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-sm"
             : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -27,7 +27,7 @@ export function ViewToggle({ view, onViewChange }: ViewToggleProps) {
       <button
         type="button"
         onClick={() => onViewChange("card")}
-        className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs transition-colors ${
+        className={`inline-flex cursor-pointer items-center justify-center w-8 h-8 rounded-full text-xs transition-colors ${
           view === "card"
             ? "bg-white dark:bg-gray-900 text-blue-600 dark:text-blue-400 shadow-sm"
             : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"

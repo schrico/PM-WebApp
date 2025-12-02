@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Check, X } from "lucide-react";
 import { formatNumber, formatDate } from "@/utils/formatters";
 import { getSystemColor } from "@/utils/toChange/systemColors";
@@ -19,25 +20,25 @@ type Project = {
 const unclaimedProjects: Project[] = [
   {
     id: "1",
-    system: "Phrase",
+    system: "B0X",
     project: "Marketing Campaign Q4",
     words: 2500,
     lines: 180,
-    dueDate: "2025-11-25",
+    dueDate: "2025-11-27",
     instructions: "Follow brand guidelines",
   },
   {
     id: "2",
-    system: "Trados",
+    system: "XTM",
     project: "Legal Contract Translation",
     words: 4200,
     lines: 310,
-    dueDate: "2025-11-22",
+    dueDate: "2025-11-27",
     instructions: "Certified translation required",
   },
   {
     id: "3",
-    system: "MemoQ",
+    system: "SSE",
     project: "Technical Manual v2.3",
     words: 8900,
     lines: 650,
@@ -46,11 +47,11 @@ const unclaimedProjects: Project[] = [
   },
   {
     id: "4",
-    system: "Phrase",
+    system: "B0X",
     project: "Website Localization",
     words: 1800,
     lines: 125,
-    dueDate: "2025-11-24",
+    dueDate: "2025-11-28",
     instructions: "SEO keywords must be maintained",
   },
 ];
@@ -58,53 +59,69 @@ const unclaimedProjects: Project[] = [
 const inProgressProjects: Project[] = [
   {
     id: "5",
-    system: "Trados",
+    system: "XTM",
     project: "User Guide Translation",
     words: 3200,
     lines: 240,
-    dueDate: "2025-11-20",
+    dueDate: "2025-11-29",
     instructions: "Maintain formatting",
   },
   {
     id: "6",
-    system: "MemoQ",
+    system: "SSE",
     project: "Product Description Set",
     words: 1500,
     lines: 95,
-    dueDate: "2025-11-21",
+    dueDate: "2025-11-28",
     instructions: "Creative adaptation allowed",
   },
   {
     id: "7",
-    system: "Phrase",
+    system: "STM",
     project: "Email Templates",
     words: 950,
     lines: 68,
-    dueDate: "2025-11-19",
+    dueDate: "2025-11-27",
     instructions: "Keep tone professional yet friendly",
   },
 ];
 
 export default function MyProjectsPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"unclaimed" | "inProgress">(
     "unclaimed"
   );
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
 
-  const handleClaim = (id: string) => {
+  const handleClaim = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     console.log("Claiming project:", id);
   };
 
-  const handleRefuse = (id: string) => {
+  const handleRefuse = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     console.log("Refusing project:", id);
   };
 
-  const handleDone = (id: string) => {
+  const handleDone = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     console.log("Marking project as done:", id);
   };
 
+  const handleRowClick = (id: string, e: React.MouseEvent) => {
+    // Don't navigate if clicking on a button
+    if ((e.target as HTMLElement).closest("button")) {
+      return;
+    }
+    router.push(`/project/${id}`);
+  };
+
+  // Sort projects by due date (earliest to latest)
+  const sortedUnclaimedProjects = [...unclaimedProjects].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  const sortedInProgressProjects = [...inProgressProjects].sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
   const currentProjects =
-    activeTab === "unclaimed" ? unclaimedProjects : inProgressProjects;
+    activeTab === "unclaimed" ? sortedUnclaimedProjects : sortedInProgressProjects;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -122,7 +139,7 @@ export default function MyProjectsPage() {
           <div className="flex gap-8">
             <button
               onClick={() => setActiveTab("unclaimed")}
-              className={`pb-3 border-b-2 text-sm md:text-base transition-colors ${
+              className={`pb-3 cursor-pointer border-b-2 text-sm md:text-base transition-colors ${
                 activeTab === "unclaimed"
                   ? "border-blue-500 text-blue-500"
                   : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -133,7 +150,7 @@ export default function MyProjectsPage() {
             </button>
             <button
               onClick={() => setActiveTab("inProgress")}
-              className={`pb-3 border-b-2 text-sm md:text-base transition-colors ${
+              className={`pb-3 cursor-pointer border-b-2 text-sm md:text-base transition-colors ${
                 activeTab === "inProgress"
                   ? "border-blue-500 text-blue-500"
                   : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
@@ -188,17 +205,18 @@ export default function MyProjectsPage() {
                 {currentProjects.map((project) => (
                   <tr
                     key={project.id}
-                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors cursor-pointer"
+                    onClick={(e) => handleRowClick(project.id, e)}
                   >
                     <td className="px-6 py-4">
                       <div
-                        className={`w-3 h-3 rounded-full ${getSystemColor(
+                        className={`w-3 h-3 rounded ${getSystemColor(
                           project.system
                         )}`}
                       />
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-800/30 text-gray-700 dark:text-gray-200 text-xs md:text-sm">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-gray-900 dark:text-blue-400 text-sm">
                         {project.system}
                       </span>
                     </td>
@@ -221,36 +239,16 @@ export default function MyProjectsPage() {
                       {activeTab === "unclaimed" ? (
                         <div className="flex gap-2">
                           <button
-                            onClick={() => handleClaim(project.id)}
-                            className="
-                              inline-flex items-center gap-1 px-3 py-1.5
-                              bg-gray-100 dark:bg-gray-700
-                              text-gray-700 dark:text-gray-300
-                              rounded-lg border border-gray-200 dark:border-gray-600
-                              shadow-sm hover:shadow-lg
-                              hover:bg-blue-500 hover:text-white
-                              transition-all duration-200
-                              hover:scale-[1.15]
-                              text-xs md:text-sm
-                            "
+                            onClick={(e) => handleClaim(project.id, e)}
+                            className="inline-flex cursor-pointer items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-all text-sm hover:bg-blue-500 hover:text-white border border-gray-200 dark:border-gray-600 shadow-sm"
                             type="button"
                           >
                             <Check className="w-4 h-4" />
                             Claim
                           </button>
                           <button
-                            onClick={() => handleRefuse(project.id)}
-                            className="
-                              inline-flex items-center gap-1 px-3 py-1.5
-                              bg-gray-100 dark:bg-gray-700
-                              text-gray-700 dark:text-gray-300
-                              rounded-lg border border-gray-200 dark:border-gray-600
-                              shadow-sm hover:shadow-lg
-                              hover:bg-red-500 hover:text-white
-                              transition-all duration-200
-                              hover:scale-[1.15]
-                              text-xs md:text-sm
-                            "
+                            onClick={(e) => handleRefuse(project.id, e)}
+                            className="inline-flex cursor-pointer items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-all text-sm hover:bg-red-500 hover:text-white border border-gray-200 dark:border-gray-600 shadow-sm"
                             type="button"
                           >
                             <X className="w-4 h-4" />
@@ -259,18 +257,8 @@ export default function MyProjectsPage() {
                         </div>
                       ) : (
                         <button
-                          onClick={() => handleDone(project.id)}
-                          className="
-                            inline-flex items-center gap-1 px-3 py-1.5
-                            bg-gray-100 dark:bg-gray-700
-                            text-gray-700 dark:text-gray-300
-                            rounded-lg border border-gray-200 dark:border-gray-600
-                            shadow-sm hover:shadow-lg
-                            hover:bg-green-500 hover:text-white
-                            transition-all duration-200
-                            hover:scale-[1.15]
-                            text-xs md:text-sm
-                          "                          
+                          onClick={(e) => handleDone(project.id, e)}
+                          className="inline-flex cursor-pointer items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-all text-sm hover:bg-green-500 hover:text-white border border-gray-200 dark:border-gray-600 shadow-sm"
                           type="button"
                         >
                           <Check className="w-4 h-4" />
@@ -290,11 +278,12 @@ export default function MyProjectsPage() {
           {currentProjects.map((project) => (
             <div
               key={project.id}
-              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4"
+              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-lg dark:hover:shadow-blue-500/20 dark:hover:border-blue-500/50 transition-all"
+              onClick={(e) => handleRowClick(project.id, e)}
             >
               <div className="flex items-center mb-4">
                 <div
-                  className={`w-3 h-3 rounded-full ${getSystemColor(
+                  className={`w-3 h-3 rounded ${getSystemColor(
                     project.system
                   )}`}
                 />
@@ -320,37 +309,16 @@ export default function MyProjectsPage() {
               {activeTab === "unclaimed" ? (
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleClaim(project.id)}
-                    className="
-                                inline-flex items-center gap-1 px-3 py-1.5
-                                bg-gray-100 dark:bg-gray-700
-                                text-gray-700 dark:text-gray-300
-                                rounded-lg border border-gray-200 dark:border-gray-600
-                                shadow-sm hover:shadow-lg
-                                hover:bg-blue-500 hover:text-white
-                                transition-all duration-200
-                                hover:scale-[1.15]
-                                text-xs md:text-sm
-                              "
- 
+                    onClick={(e) => handleClaim(project.id, e)}
+                    className="inline-flex cursor-pointer items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-all text-sm hover:bg-blue-500 hover:text-white border border-gray-200 dark:border-gray-600 shadow-sm"
                     type="button"
                   >
                     <Check className="w-4 h-4" />
                     Claim
                   </button>
                   <button
-                    onClick={() => handleRefuse(project.id)}
-                    className="
-                                inline-flex items-center gap-1 px-3 py-1.5
-                                bg-gray-100 dark:bg-gray-700
-                                text-gray-700 dark:text-gray-300
-                                rounded-lg border border-gray-200 dark:border-gray-600
-                                shadow-sm hover:shadow-lg
-                                hover:bg-red-500 hover:text-white
-                                transition-all duration-200
-                                hover:scale-[1.15]
-                                text-xs md:text-sm
-                              "
+                    onClick={(e) => handleRefuse(project.id, e)}
+                    className="inline-flex cursor-pointer items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-all text-sm hover:bg-red-500 hover:text-white border border-gray-200 dark:border-gray-600 shadow-sm"
                     type="button"
                   >
                     <X className="w-4 h-4" />
@@ -359,19 +327,8 @@ export default function MyProjectsPage() {
                 </div>
               ) : (
                 <button
-                  onClick={() => handleDone(project.id)}
-                 className="
-                            inline-flex items-center gap-1 px-3 py-1.5
-                            bg-gray-100 dark:bg-gray-700
-                            text-gray-700 dark:text-gray-300
-                            rounded-lg border border-gray-200 dark:border-gray-600
-                            shadow-sm hover:shadow-lg
-                            hover:bg-green-500 hover:text-white
-                            transition-all duration-200
-                            hover:scale-[1.15]
-                            text-xs md:text-sm
-                          "
-
+                  onClick={(e) => handleDone(project.id, e)}
+                  className="inline-flex cursor-pointer items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-all text-sm hover:bg-green-500 hover:text-white border border-gray-200 dark:border-gray-600 shadow-sm"
                   type="button"
                 >
                   <Check className="w-4 h-4" />

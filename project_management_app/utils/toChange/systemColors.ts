@@ -1,12 +1,15 @@
+export const systemColors: Record<string, string> = {
+  'B0X': 'bg-blue-500',
+  'XTM': 'bg-purple-500',
+  'SSE': 'bg-green-500',
+  'STM': 'bg-orange-500',
+  'LAT': 'bg-pink-500',
+  // Legacy support
+  'Phrase': 'bg-emerald-500',
+  'Trados': 'bg-blue-500',
+  'MemoQ': 'bg-purple-500',
+};
+
 export function getSystemColor(system: string): string {
-  switch (system.toLowerCase()) {
-    case "phrase":
-      return "bg-emerald-500";
-    case "trados":
-      return "bg-blue-500";
-    case "memoq":
-      return "bg-purple-500";
-    default:
-      return "bg-gray-400";
-  }
+  return systemColors[system] || 'bg-gray-500';
 }

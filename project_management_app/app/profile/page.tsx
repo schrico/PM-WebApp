@@ -79,7 +79,7 @@ export default function Profile() {
                 {initials}
               </div>
               <button
-                className="absolute bottom-0 right-0 w-8 h-8 bg-gray-900 dark:bg-gray-100 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                className="absolute bottom-0 right-0 w-8 h-8 cursor-pointer bg-gray-900 dark:bg-gray-100 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
                 type="button"
               >
                 <Camera className="w-4 h-4 text-white dark:text-gray-900" />
@@ -233,7 +233,7 @@ export default function Profile() {
             <button
               onClick={handleSave}
               disabled={!hasChanges || isSaving}
-              className={`px-6 py-3 rounded-lg transition-colors flex items-center gap-2 shadow-sm text-sm font-medium ${
+              className={`px-6 py-3 cursor-pointer rounded-lg transition-colors flex items-center gap-2 shadow-sm text-sm font-medium ${
                 !hasChanges || isSaving
                   ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-300 cursor-not-allowed"
                   : "bg-blue-500 hover:bg-blue-600 text-white"

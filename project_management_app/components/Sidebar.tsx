@@ -7,13 +7,14 @@ import {
   Home,
   FolderKanban,
   UserPlus,
-  LayoutGrid,
   Moon,
   Sun,
   ChevronLeft,
   ChevronRight,
   Settings,
   UserCircle,
+  Receipt,
+  ClipboardList,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -34,9 +35,10 @@ export function Sidebar({
 
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
-    { path: "/my-projects", icon: FolderKanban, label: "My Projects" },
+    { path: "/my-projects", icon: ClipboardList, label: "My Projects" },
     { path: "/assign-projects", icon: UserPlus, label: "Assign Projects" },
-    { path: "/manage-projects", icon: LayoutGrid, label: "Manage Projects" },
+    { path: "/manage-projects", icon: FolderKanban, label: "Manage Projects" },
+    { path: "/invoicing", icon: Receipt, label: "Invoicing" },
   ];
 
   // Controls when text labels are visible (for the 350ms delay)
@@ -78,7 +80,7 @@ export function Sidebar({
           </div>
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+            className="p-2 cursor-pointer rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
             type="button"
           >
             {collapsed ? (
@@ -128,9 +130,7 @@ export function Sidebar({
             {showLabels && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm truncate">John Smith</p>
-                <p className="text-xs opacity-70 truncate">
-                  Senior Translator
-                </p>
+                <p className="text-xs opacity-70 truncate">Senior Translator</p>
               </div>
             )}
           </Link>
@@ -153,7 +153,7 @@ export function Sidebar({
           <button
             type="button"
             onClick={() => setDarkMode(!darkMode)}
-            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="flex cursor-pointer items-center gap-3 w-full px-3 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
             title={
               collapsed ? (darkMode ? "Light Mode" : "Dark Mode") : undefined
             }
@@ -163,9 +163,7 @@ export function Sidebar({
             ) : (
               <Moon className="w-5 h-5 shrink-0" />
             )}
-            {showLabels && (
-              <span>{darkMode ? "Light Mode" : "Dark Mode"}</span>
-            )}
+            {showLabels && <span>{darkMode ? "Light Mode" : "Dark Mode"}</span>}
           </button>
         </div>
       </div>

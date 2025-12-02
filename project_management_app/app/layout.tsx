@@ -11,8 +11,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <html lang="en" className={darkMode ? "dark" : ""}>
-      <body className="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <html
+      lang="en"
+      className={darkMode ? "dark" : ""}
+      data-sidebar-collapsed={sidebarCollapsed}
+    >
+      <body
+        className="bg-gray-50 dark:bg-gray-900 transition-colors duration-200"
+        style={
+          {
+            "--sidebar-width": sidebarCollapsed ? "80px" : "208px",
+          } as React.CSSProperties
+        }
+      >
         <Sidebar
           darkMode={darkMode}
           setDarkMode={setDarkMode}
